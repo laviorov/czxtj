@@ -1,0 +1,3 @@
+exomler - не парсит если есть pcdata
+fast_xml - не парсит если есть pcdata
+erlsom
