@@ -5,9 +5,14 @@
   {mod, { czxtj_app, []}},
   {applications,
    [kernel,
-    stdlib
+    stdlib,
+    iconv,
+    jiffy,
+    exomler
    ]},
-  {env,[]},
+  {env,[
+        {root_name, <<"doc">>}
+       ]},
   {modules, []},
 
   {maintainers, []},
