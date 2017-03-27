@@ -33,7 +33,7 @@ convert_children(Children)->
     lists:reverse(Res).
 
 map_list_append(K, V, M)->
-    M#{K => [V | maps:get(K, M, [])]}.
+    maps:put(K, [V | maps:get(K, M, [])], M).
 
 %%%------------------------------------------------------------
 detect_encoding(<<"\xFF\xFE",     _/binary>>) -> <<"UTF-16LE">>;
