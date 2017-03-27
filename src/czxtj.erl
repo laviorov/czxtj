@@ -3,19 +3,9 @@
 
 -spec xml2json(binary()) -> binary().
 xml2json(Xmlb)->
-    try erlsom:simple_form(Xmlb, [{output_encoding, 'utf8'}, {nameFun, fun name_to_binary/3}]) of
-        {ok, Xml, _Rest} ->
-            jiffy:encode(convert_xml(Xml))
-    catch
-        {error,"Encoding CP-1250 not supported"} ->
-            xml2json(iconv(Xmlb, <<"utf8">>))
-    end.
+    {xml, _Version, Encoding, Xml} = exomler:decode_document(Xmlb),
+    jiffy:encode(convert_xml(Xml)).
 
-name_to_binary(Name, _, _) -> 
-    erlang:list_to_binary(Name). 
-
-iconv(B, _) ->
-   error("not impl"). 
 
 convert_xml(E={Name, _Attrs, _Childs})->
     {[{Name, convert_xml_element(E)}]}.
@@ -27,16 +17,6 @@ convert_xml_element({_Name, Attrs, Children})->
 
 attr_name_to_json({K, V}) -> {<<"@", K/binary>>, V}.
    
-%% convert_children(Children)-> 
-%%     Grouped = lists:foldl(
-%%                 fun (B, M) when is_binary(B) -> map_list_append(<<"#text">>, B, M);
-%%                     (E={Name, _, _}, M) -> map_list_append(Name, convert_xml_element(E), M)
-%%                 end, #{}, Children),
-%%     Res = maps:fold(fun
-%%                   (K, [E], M) -> M#{K => E};
-%%                   (K, L, M) when is_list(L) -> M#{K => lists:reverse(L)}
-%%               end, #{}, Grouped),
-%%     maps:to_list(Res).
 convert_children(Children)-> 
     Grouped = lists:foldl(
                 fun (B, M) when is_binary(B) -> map_list_append(<<"#text">>, B, M);
@@ -58,9 +38,9 @@ map_list_append(K, V, M)->
 -spec json2xml(binary()) -> binary().
 json2xml(Jsonb) ->
     Json = jiffy:decode(Jsonb),
-    {ok, Doc} = erlsom:write(convert_json(Json), [{output, binary}]),
+    Doc = exomler:encode(convert_json(Json)),
     Prolog = xml_prolog(),
-    <<Prolog, Doc/binary>>. 
+    <<Prolog/binary, Doc/binary>>. 
 
 xml_prolog() -> <<"<?xml version=\"1.0\" encoding=\"UTF-8\" ?>">>.
 
